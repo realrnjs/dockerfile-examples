@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-#===============================================================================
-#
-#    AUTHOR: Alen Komljen <alen.komljen@live.com>
-#
-#===============================================================================
 set -e
 
 home="$( cd "$( dirname "$0" )" && pwd )"
@@ -15,14 +10,16 @@ opts="start stop restart build rebuild kill rm rmi"
 build() {
   echo "Build docker images:"
   for image in $images; do
-    docker build --rm -t komljen/${image} ${home}/${image}/.
+    docker build --rm -t dockerfile/${image} ${home}/${image}/.
   done
+
+  docker images
 }
 #-------------------------------------------------------------------------------
 rebuild() {
   echo "Rebuild docker images:"
   for image in $images; do
-    docker build --no-cache --rm -t komljen/${image} ${home}/${image}/.
+    docker build --no-cache --rm -t dockerfile/${image} ${home}/${image}/.
   done
 }
 #-------------------------------------------------------------------------------
@@ -36,8 +33,20 @@ stop() {
 start() {
   service_name=$(shyaml get-value $key.service.name < $conf)
   service_image=$(shyaml get-value $key.service.image < $conf)
-  service_port=$(shyaml get-value $key.service.port < $conf)
-  service_port_cmd=$(if [[ ! -z "$service_port" ]]; then echo "-p ${service_port}:${service_port}"; fi)
+
+  service_ports=$(shyaml get-value $key.service.port < $conf | cut -d' ' -f2)
+  #service_port=$(shyaml get-value $key.service.port < $conf)
+  #service_port_cmd=$(if [[ ! -z "$service_port" ]]; then echo "-p ${service_port}:${service_port}"; fi)
+
+  for service_port in $service_ports; do
+
+    if [[ ! -z "$links_cmd" ]]; then
+      service_port_cmd=$(echo "-p ${service_port}:${service_port}")
+    else
+      service_port_cmd=$(echo $service_port_cmd" -p ${service_port}:${service_port}")
+    fi
+
+  done
 
   links_num=$(shyaml get-value $key.links < $conf | grep -c "name") || true
 
@@ -61,13 +70,18 @@ start() {
   fi
 
   echo "Starting ${service_name}:"
+  echo "docker run -d --name $service_name $service_port_cmd $links_cmd $service_image"
   docker run -d \
              --name "$service_name" \
              $service_port_cmd \
              $links_cmd \
              "$service_image"
 
-  docker ps
+  docker ps -a
+
+  C_ID=$(docker ps -a | grep $service_name | cut -d' ' -f1)
+
+  echo "docker exec -i -t $C_ID bash"
 }
 #-------------------------------------------------------------------------------
 kill() {

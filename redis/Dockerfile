@@ -1,5 +1,4 @@
-FROM komljen/ubuntu
-MAINTAINER Alen Komljen <alen.komljen@live.com>
+FROM dockerfile/ubuntu
 
 RUN \
   add-apt-repository -y ppa:chris-lea/redis-server && \

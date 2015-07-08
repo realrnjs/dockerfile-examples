@@ -1,7 +1,6 @@
-FROM komljen/ubuntu
-MAINTAINER Alen Komljen <alen.komljen@live.com>
+FROM dockerfile/ubuntu
 
-ENV MONGO_VERSION 2.6.6
+ENV MONGO_VERSION 3.0.0
 
 RUN \
   apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
@@ -12,7 +11,7 @@ RUN \
           mongodb-org=${MONGO_VERSION} && \
   rm -rf /var/lib/apt/lists/*
 
-VOLUME ["/data/db"]
+VOLUME ["/data/mongodb"]
 
 RUN rm /usr/sbin/policy-rc.d
 CMD ["/usr/bin/mongod"]

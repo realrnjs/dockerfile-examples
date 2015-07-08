@@ -1,25 +1,29 @@
-FROM ubuntu:trusty
-MAINTAINER Alen Komljen <alen.komljen@live.com>
+#
+# Ubuntu Dockerfile
+#
+# https://github.com/dockerfile/ubuntu
+#
 
-ENV DEBIAN_FRONTEND noninteractive
+# Pull base image.
+FROM ubuntu
 
-RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup
-RUN echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache
+MAINTAINER kjs <jskwon@kesti.com>
 
-RUN echo $'#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d
-RUN chmod +x /usr/sbin/policy-rc.d
-
+# Install.
 RUN \
+  sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
   apt-get update && \
-  apt-get -y install \
-          software-properties-common \
-          vim \
-          pwgen \
-          unzip \
-          curl \
-          git-core && \
+  apt-get -y upgrade && \
+  apt-get install -y build-essential && \
+  apt-get install -y software-properties-common && \
+  apt-get install -y byobu curl git htop man unzip vim wget && \
   rm -rf /var/lib/apt/lists/*
 
-ADD tcp_wait.sh tcp_wait.sh
-ADD create_db_pg.sh create_db_pg.sh
-ADD create_db_mysql.sh create_db_mysql.sh
+# Set environment variables.
+ENV HOME /root
+
+# Define working directory.
+WORKDIR /root
+
+# Define default command.
+CMD ["bash"]

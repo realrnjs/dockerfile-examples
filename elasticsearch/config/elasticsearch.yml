@@ -1,0 +1,5 @@
+path:
+  logs: /data/log
+  data: /data/data
+  plugins: /usr/share/elasticsearch/plugins
+  work: /data/work
